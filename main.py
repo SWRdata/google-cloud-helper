@@ -17,10 +17,6 @@ def main():
     smc = SecretManagerHelper()
     smc.get_secret(project_id, "secret_id")
 
-    import pdb
-
-    pdb.set_trace()
-
 
 if __name__ == "__main__":
     main()
