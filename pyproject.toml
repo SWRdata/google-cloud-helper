@@ -1,6 +1,6 @@
 [project]
 name = "google-cloud-helper"
-version = "0.1.0"
+version = "0.1.2"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -9,6 +9,7 @@ dependencies = [
     "google-cloud-secret-manager>=2.24.0",
     "google-cloud-storage>=3.2.0",
     "pandas>=2.3.1",
+    "pandas-gbq>=0.29.2",
     "pre-commit>=4.2.0",
     "pytest>=8.4.1",
 ]

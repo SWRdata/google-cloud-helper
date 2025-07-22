@@ -35,6 +35,17 @@ class BigQueryHelper:
         except exceptions.NotFound:
             return False
 
+    def read_table_as_df(self, table_id: str) -> pd.DataFrame:
+        """Reads a BigQuery table as a pandas DataFrame.
+
+        Args:
+            table_id: The ID of the table to read.
+
+        Returns:
+            A pandas DataFrame containing the data from the table.
+        """
+        return pd.read_gbq(table_id, project_id=self.project_id)
+
     def create_dataset(self, dataset_id: str) -> None:
         """Creates a BigQuery dataset if it doesn't already exist.
 
