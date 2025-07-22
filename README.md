@@ -6,9 +6,9 @@ This repository contains common functions for easy access to Google Cloud Infras
 ## Example Usage
 
 ```python
-from src.BigQueryHelper import BigQueryHelper
-from src.GoogleBucketHelper import GoogleBucketHelper
-from src.SecretManagerHelper import SecretManagerHelper
+from google_cloud_helper.BigQueryHelper import BigQueryHelper
+from google_cloud_helper.GoogleBucketHelper import GoogleBucketHelper
+from google_cloud_helper.SecretManagerHelper import SecretManagerHelper
 
 # BigQuery
 bq_helper = BigQueryHelper("your-gcp-project-id")

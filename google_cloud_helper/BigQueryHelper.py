@@ -20,7 +20,7 @@ class BigQueryHelper:
         self.project_id = project_id
         self.client = bigquery.Client(project=project_id)
 
-    def table_exists(self, table_id: str) -> bool:
+    def exists_table(self, table_id: str) -> bool:
         """Checks if a BigQuery table exists.
 
         Args:
@@ -78,7 +78,7 @@ class BigQueryHelper:
             labels: Optional. A dictionary of labels to add to the table for
                 cost monitoring or organization.
         """
-        schema = self.generate_bigquery_schema(df)
+        schema = self.generate_bigquery_schema_from_df(df)
         table = bigquery.Table(table_id, schema=schema)
 
         if partitioning:
@@ -176,7 +176,7 @@ class BigQueryHelper:
         self.client.query(merge_sql).result()
         self.client.delete_table(temp_table_ref, not_found_ok=True)
 
-    def generate_bigquery_schema(self, df: pd.DataFrame) -> List[SchemaField]:
+    def generate_bigquery_schema_from_df(self, df: pd.DataFrame) -> List[SchemaField]:
         """Generates a BigQuery schema from a pandas DataFrame.
 
         This function infers BigQuery data types from the DataFrame's dtypes.
@@ -210,7 +210,7 @@ class BigQueryHelper:
             if isinstance(val, dict) or (
                 mode == "REPEATED" and isinstance(val[0], dict)
             ):
-                fields = self.generate_bigquery_schema(pd.json_normalize(val))
+                fields = self.generate_bigquery_schema_from_df(pd.json_normalize(val))
             else:
                 fields = []
 

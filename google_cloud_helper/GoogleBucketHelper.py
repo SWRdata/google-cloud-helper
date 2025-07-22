@@ -22,7 +22,7 @@ class GoogleBucketHelper:
         blob = bucket.blob(path)
         return blob.download_as_text()
 
-    def bucket_exists(self, bucket_name: str) -> bool:
+    def exists_bucket(self, bucket_name: str) -> bool:
         """Checks if a Google Cloud Storage bucket exists.
 
         Args:

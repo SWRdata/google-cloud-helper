@@ -3,13 +3,15 @@ from unittest import mock
 import pytest
 from google.api_core import exceptions
 
-from src.GoogleBucketHelper import GoogleBucketHelper
+from google_cloud_helper.GoogleBucketHelper import GoogleBucketHelper
 
 
 @pytest.fixture
 def mock_storage_client():
     """Mocks the storage.Client."""
-    with mock.patch("src.GoogleBucketHelper.storage.Client") as mock_client:
+    with mock.patch(
+        "google_cloud_helper.GoogleBucketHelper.storage.Client"
+    ) as mock_client:
         yield mock_client
 
 
@@ -38,7 +40,7 @@ def test_download_as_text_success(mock_storage_client):
     assert content == "file content"
 
 
-def test_bucket_exists_true(mock_storage_client):
+def test_exists_bucket_true(mock_storage_client):
     """Tests that bucket_exists returns True when the bucket is found."""
     # Arrange
     mock_client_instance = mock_storage_client.return_value
@@ -46,14 +48,14 @@ def test_bucket_exists_true(mock_storage_client):
     bucket_name = "existing-bucket"
 
     # Act
-    exists = helper.bucket_exists(bucket_name)
+    exists = helper.exists_bucket(bucket_name)
 
     # Assert
     mock_client_instance.get_bucket.assert_called_once_with(bucket_name)
     assert exists is True
 
 
-def test_bucket_exists_false(mock_storage_client):
+def test_exists_bucket_false(mock_storage_client):
     """Tests that bucket_exists returns False when the bucket is not found."""
     # Arrange
     mock_client_instance = mock_storage_client.return_value
@@ -64,7 +66,7 @@ def test_bucket_exists_false(mock_storage_client):
     bucket_name = "non-existent-bucket"
 
     # Act
-    exists = helper.bucket_exists(bucket_name)
+    exists = helper.exists_bucket(bucket_name)
 
     # Assert
     mock_client_instance.get_bucket.assert_called_once_with(bucket_name)

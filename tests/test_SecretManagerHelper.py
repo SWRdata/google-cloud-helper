@@ -3,14 +3,14 @@ from unittest import mock
 import pytest
 from google.api_core import exceptions
 
-from src.SecretManagerHelper import SecretManagerHelper
+from google_cloud_helper.SecretManagerHelper import SecretManagerHelper
 
 
 @pytest.fixture
 def mock_secret_manager_client():
     """Mocks the SecretManagerServiceClient."""
     with mock.patch(
-        "src.SecretManagerHelper.secretmanager.SecretManagerServiceClient"
+        "google_cloud_helper.SecretManagerHelper.secretmanager.SecretManagerServiceClient"
     ) as mock_client:
         yield mock_client
 
