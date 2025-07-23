@@ -35,6 +35,25 @@ class BigQueryHelper:
         except exceptions.NotFound:
             return False
 
+    def create_table_labels(
+        self, cost_category: str, triggered_by: str, caller: str
+    ) -> Dict[str, str]:
+        """Returns a dictionary of default labels for BigQuery tables.
+
+        Args:
+            cost_category: The cost category of the table.
+            triggered_by: The name of the service that triggered the table creation.
+            caller: either 'service' or 'user'
+
+        Returns:
+            A dictionary of default labels for BigQuery tables.
+        """
+        return {
+            "cost-category": cost_category,
+            "triggered_by": triggered_by,
+            "caller": caller,
+        }
+
     def read_table_as_df(self, table_id: str) -> pd.DataFrame:
         """Reads a BigQuery table as a pandas DataFrame.
 
@@ -46,7 +65,7 @@ class BigQueryHelper:
         """
         return pd.read_gbq(table_id, project_id=self.project_id)
 
-    def create_dataset(self, dataset_id: str) -> None:
+    def create_dataset(self, dataset_id: str, location: str = "europe-west3") -> None:
         """Creates a BigQuery dataset if it doesn't already exist.
 
         The dataset will be created in the 'europe-west3' location.
@@ -54,6 +73,7 @@ class BigQueryHelper:
         Args:
             dataset_id: The ID of the dataset to create. This should not include
                 the project ID.
+            location: The location of the dataset. Defaults to 'europe-west3'.
         """
         dataset_ref = f"{self.project_id}.{dataset_id}"
         try:
@@ -61,7 +81,7 @@ class BigQueryHelper:
             logger.info(f"Dataset {dataset_ref} already exists.")
         except exceptions.NotFound:
             dataset = bigquery.Dataset(dataset_ref)
-            dataset.location = "europe-west3"
+            dataset.location = location
             self.client.create_dataset(dataset)
             logger.info(f"Created dataset {dataset_ref}.")
 
