@@ -34,6 +34,7 @@ print("Successfully retrieved secret!")
 | :--- | :--- |
 | `table_exists(table_id)` | Checks if a specific BigQuery table exists. |
 | `create_dataset(dataset_id)` | Creates a new BigQuery dataset if it doesn't already exist. |
+| `delete_table(table_id)` | Deletes a BigQuery table.
 | `create_table_from_df(...)` | Creates and populates a table from a pandas DataFrame, with options for partitioning and clustering. |
 | `upload_df_to_table(table_id, df)` | Appends a pandas DataFrame to an existing BigQuery table. |
 | `incremental_insert_with_deduplication(...)` | Inserts new rows from a DataFrame, avoiding duplicates based on a unique key. |
@@ -58,4 +59,13 @@ To run the tests, execute the following command:
 
 ```
 uv run pytest
+```
+
+## Build and Publish
+
+To build and publish the package to PyPI, execute the following command:
+
+```
+uv build
+uv publish --token <pypi-token>
 ```

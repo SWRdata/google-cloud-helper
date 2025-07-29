@@ -128,6 +128,23 @@ class BigQueryHelper:
         job = self.client.load_table_from_dataframe(df, table_id)
         job.result()
 
+    def delete_table(self, table_id: str):
+        """Deletes a BigQuery table.
+
+        Args:
+            table_id: The ID of the table to delete.
+        """
+        self.client.delete_table(table_id, not_found_ok=True)
+        logging.info(f"Deleted table {table_id}")
+
+    def delete_dataset(self, dataset_id: str):
+        """Deletes a BigQuery dataset.
+        Args:
+            dataset_id: The ID of the dataset to delete.
+        """
+        self.client.delete_dataset(dataset_id, not_found_ok=True)
+        logging.info(f"Deleted dataset {dataset_id}")
+
     def upload_df_to_table(self, table_id: str, df: pd.DataFrame):
         """Uploads a pandas DataFrame to an existing BigQuery table.
 

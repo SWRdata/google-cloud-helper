@@ -11,6 +11,25 @@ class GoogleBucketHelper:
         """
         self.client = storage.Client(project=project_id)
 
+    def upload_content(
+        self,
+        content: str,
+        bucket_name: str,
+        filename: str,
+        content_type: str = "text/html",
+    ) -> None:
+        """Uploads a file to a Google Cloud Storage bucket.
+
+        Args:
+            content: The file content, e.g. a string or text
+            bucket_name: The name of the bucket.
+            filename: name of the file in the bucket.
+            content_type: The content type of the file.
+        """
+        bucket = self.client.bucket(bucket_name)
+        blob = bucket.blob(filename)
+        blob.upload_from_string(content, content_type=content_type)
+
     def download_as_text(self, bucket_name: str, path: str) -> str:
         """Reads a file from a Google Cloud Storage bucket and returns it as string
 
