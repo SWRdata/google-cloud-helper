@@ -30,28 +30,41 @@ print("Successfully retrieved secret!")
 
 ### BigQueryHelper
 
-| Function | Description |
-| :--- | :--- |
-| `table_exists(table_id)` | Checks if a specific BigQuery table exists. |
-| `create_dataset(dataset_id)` | Creates a new BigQuery dataset if it doesn't already exist. |
-| `delete_table(table_id)` | Deletes a BigQuery table.
-| `create_table_from_df(...)` | Creates and populates a table from a pandas DataFrame, with options for partitioning and clustering. |
-| `upload_df_to_table(table_id, df)` | Appends a pandas DataFrame to an existing BigQuery table. |
-| `incremental_insert_with_deduplication(...)` | Inserts new rows from a DataFrame, avoiding duplicates based on a unique key. |
-| `generate_bigquery_schema(df)` | Infers a BigQuery schema from a pandas DataFrame. |
+<!-- BIGQUERYHELPER START -->
+- `create_dataset(self, dataset_id, location)`
+- `create_table_from_df(self, table_id, df, partitioning, clustering, labels)`
+- `create_table_labels(self, cost_category, triggered_by, caller)`
+- `delete_dataset(self, dataset_id)`
+- `delete_table(self, table_id)`
+- `exists_table(self, table_id)`
+- `generate_bigquery_schema_from_df(self, df)`
+- `incremental_insert_with_deduplication(self, table_id, df, unique_key)`
+- `read_table_as_df(self, table_id)`
+- `sql2df(self, query)`
+- `upload_df_to_table(self, table_id, df)`
+
+<!-- BIGQUERYHELPER END -->
+
 
 ### GoogleBucketHelper
 
-| Function | Description |
-| :--- | :--- |
-| `download_as_text(bucket, path)` | Downloads a file from a Google Cloud Storage bucket as text. |
-| `bucket_exists(bucket_name)` | Checks if a specific Google Cloud Storage bucket exists. |
+<!-- GOOGLEBUCKETHELPER START -->
+- `download_as_text(self, bucket_name, path)`
+- `exists_bucket(self, bucket_name)`
+- `upload_content(self, content, bucket_name, filename, content_type)`
+
+<!-- GOOGLEBUCKETHELPER END -->
 
 ### SecretManagerHelper
 
-| Function | Description |
-| :--- | :--- |
-| `get_secret(project_id, secret_id)` | Retrieves the latest version of a secret from Secret Manager. |
+<!-- SECRETMANAGERHELPER START -->
+- `get_secret(self, project_id, secret_id)`
+
+<!-- SECRETMANAGERHELPER END -->
+
+## Development
+
+When new functions are added run `uv run update_readme.py` to update the README.md file.
 
 ## Testing
 
