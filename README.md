@@ -41,6 +41,7 @@ print("Successfully retrieved secret!")
 - `incremental_insert_with_deduplication(self, table_id, df, unique_key)`
 - `read_table_as_df(self, table_id)`
 - `sql2df(self, query)`
+- `update_table(self, df, table_id, id_cols)`
 - `upload_df_to_table(self, table_id, df)`
 
 <!-- BIGQUERYHELPER END -->

@@ -289,51 +289,51 @@ class BigQueryHelper:
             logger.error(f"Error reading DataFrame from BigQuery: {e}")
             return None
 
-        def update_table(self, df, table_id, id_cols):
-            """
-            Atomically updates rows from df into a BigQuery table
-            based on matching id_cols using MERGE.
+    def update_table(self, df, table_id, id_cols):
+        """
+        Atomically updates rows from df into a BigQuery table
+        based on matching id_cols using MERGE.
 
-            Args:
-                df (pd.DataFrame): DataFrame with new data
-                table_id (str): Full BQ table ID (e.g. 'project.dataset.table')
-                id_cols (list[str]): List of columns that uniquely identify rows
-            """
-            if not isinstance(id_cols, list):
-                raise ValueError("id_cols must be a list of column names")
+        Args:
+            df (pd.DataFrame): DataFrame with new data
+            table_id (str): Full BQ table ID (e.g. 'project.dataset.table')
+            id_cols (list[str]): List of columns that uniquely identify rows
+        """
+        if not isinstance(id_cols, list):
+            raise ValueError("id_cols must be a list of column names")
 
-            # Step 1: Upload df to a temporary table
-            temp_table_id = table_id + "_temp_merge"
-            job = self.client.load_table_from_dataframe(
-                df,
-                temp_table_id,
-                job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE"),
-            )
-            job.result()
-            logger.info(f"Loaded {len(df)} rows into temporary table {temp_table_id}")
+        # Step 1: Upload df to a temporary table
+        temp_table_id = table_id + "_temp_merge"
+        job = self.client.load_table_from_dataframe(
+            df,
+            temp_table_id,
+            job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE"),
+        )
+        job.result()
+        logger.info(f"Loaded {len(df)} rows into temporary table {temp_table_id}")
 
-            # Step 2: Build MERGE statement
-            id_match = " AND ".join([f"T.{col} = S.{col}" for col in id_cols])
-            update_set = ", ".join(
-                [f"{col} = S.{col}" for col in df.columns if col not in id_cols]
-            )
-            insert_cols = ", ".join(df.columns)
-            insert_vals = ", ".join([f"S.{col}" for col in df.columns])
+        # Step 2: Build MERGE statement
+        id_match = " AND ".join([f"T.{col} = S.{col}" for col in id_cols])
+        update_set = ", ".join(
+            [f"{col} = S.{col}" for col in df.columns if col not in id_cols]
+        )
+        insert_cols = ", ".join(df.columns)
+        insert_vals = ", ".join([f"S.{col}" for col in df.columns])
 
-            merge_sql = f"""
-            MERGE `{table_id}` T
-            USING `{temp_table_id}` S
-            ON {id_match}
-            WHEN MATCHED THEN
-              UPDATE SET {update_set}
-            WHEN NOT MATCHED THEN
-              INSERT ({insert_cols}) VALUES ({insert_vals})
-            """
+        merge_sql = f"""
+        MERGE `{table_id}` T
+        USING `{temp_table_id}` S
+        ON {id_match}
+        WHEN MATCHED THEN
+          UPDATE SET {update_set}
+        WHEN NOT MATCHED THEN
+          INSERT ({insert_cols}) VALUES ({insert_vals})
+        """
 
-            # Step 3: Execute MERGE
-            self.client.query(merge_sql).result()
-            logger.info(f"MERGE completed: updated and inserted rows into {table_id}")
+        # Step 3: Execute MERGE
+        self.client.query(merge_sql).result()
+        logger.info(f"MERGE completed: updated and inserted rows into {table_id}")
 
-            # Step 4: Drop temp table
-            self.client.delete_table(temp_table_id, not_found_ok=True)
-            logger.info(f"Dropped temporary table {temp_table_id}")
+        # Step 4: Drop temp table
+        self.client.delete_table(temp_table_id, not_found_ok=True)
+        logger.info(f"Dropped temporary table {temp_table_id}")
