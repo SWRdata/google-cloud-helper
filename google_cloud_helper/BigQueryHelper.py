@@ -92,6 +92,7 @@ class BigQueryHelper:
         partitioning: str | None = None,
         clustering: List[str] | None = None,
         labels: Dict[str, str] | None = None,
+        specific_types: Dict = {},
     ):
         """Creates and populates a BigQuery table from a pandas DataFrame.
 
@@ -108,8 +109,11 @@ class BigQueryHelper:
             clustering: Optional. A list of column names to use for clustering.
             labels: Optional. A dictionary of labels to add to the table for
                 cost monitoring or organization.
+            specific_types: Optional. A dictionary of column names and their BigQuery data types.
         """
-        schema = self.generate_bigquery_schema_from_df(df)
+        schema = self.generate_bigquery_schema_from_df(
+            df, specific_types=specific_types
+        )
         table = bigquery.Table(table_id, schema=schema)
 
         if partitioning:
@@ -169,25 +173,25 @@ class BigQueryHelper:
         self,
         table_id: str,
         df: pd.DataFrame,
-        unique_key: List[str],
+        id_cols: List[str],
     ):
         """Incrementally inserts data from a DataFrame into a table, avoiding duplicates.
 
         This method performs a MERGE operation to insert rows from the DataFrame
         that do not already exist in the target table. Duplicates are identified
-        based on the `unique_key` columns.
+        based on the `id_cols` columns.
 
         It works by:
         1. Uploading the DataFrame to a temporary staging table.
         2. Executing a MERGE SQL statement that inserts rows from the staging
-           table into the target table if they don't match on the unique key.
+           table into the target table if they don't match on the id cols.
         3. Deleting the temporary staging table.
 
         Args:
             table_id: The ID of the target table for the merge operation, in the
                 format 'project.dataset.table'.
             df: The pandas DataFrame containing new data to insert.
-            unique_key: A list of column names that constitute the unique key
+            id_cols: A list of column names that constitute the id cols
                 for deduplication.
         """
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -208,7 +212,7 @@ class BigQueryHelper:
         ).result()
 
         # Build merge SQL
-        match_condition = " AND ".join([f"T.{col} = S.{col}" for col in unique_key])
+        match_condition = " AND ".join([f"T.{col} = S.{col}" for col in id_cols])
         columns = [field.name for field in target_schema]
         insert_columns = ", ".join(columns)
         insert_values = ", ".join([f"S.{col}" for col in columns])
@@ -224,7 +228,9 @@ class BigQueryHelper:
         self.client.query(merge_sql).result()
         self.client.delete_table(temp_table_ref, not_found_ok=True)
 
-    def generate_bigquery_schema_from_df(self, df: pd.DataFrame) -> List[SchemaField]:
+    def generate_bigquery_schema_from_df(
+        self, df: pd.DataFrame, specific_types: Dict = {}
+    ) -> List[SchemaField]:
         """Generates a BigQuery schema from a pandas DataFrame.
 
         This function infers BigQuery data types from the DataFrame's dtypes.
@@ -250,6 +256,7 @@ class BigQueryHelper:
             "U": "STRING",
             "M": "TIMESTAMP",
         }
+        TYPE_MAPPING.update(specific_types)
         schema = []
         for column, dtype in df.dtypes.items():
             val = df[column].iloc[0]
@@ -258,7 +265,9 @@ class BigQueryHelper:
             if isinstance(val, dict) or (
                 mode == "REPEATED" and isinstance(val[0], dict)
             ):
-                fields = self.generate_bigquery_schema_from_df(pd.json_normalize(val))
+                fields = self.generate_bigquery_schema_from_df(
+                    pd.json_normalize(val), specific_types
+                )
             else:
                 fields = []
 
@@ -289,18 +298,21 @@ class BigQueryHelper:
             logger.error(f"Error reading DataFrame from BigQuery: {e}")
             return None
 
-    def update_table(self, df, table_id, id_cols):
+    def update_table(self, table_id: str, df: pd.DataFrame, id_cols: List[str]) -> None:
         """
         Atomically updates rows from df into a BigQuery table
         based on matching id_cols using MERGE.
 
         Args:
-            df (pd.DataFrame): DataFrame with new data
             table_id (str): Full BQ table ID (e.g. 'project.dataset.table')
+            df (pd.DataFrame): DataFrame with new data
             id_cols (list[str]): List of columns that uniquely identify rows
         """
         if not isinstance(id_cols, list):
             raise ValueError("id_cols must be a list of column names")
+
+        # Deduplicate df
+        df = df.drop_duplicates(subset=id_cols, keep="first")
 
         # Step 1: Upload df to a temporary table
         temp_table_id = table_id + "_temp_merge"
@@ -313,7 +325,9 @@ class BigQueryHelper:
         logger.info(f"Loaded {len(df)} rows into temporary table {temp_table_id}")
 
         # Step 2: Build MERGE statement
-        id_match = " AND ".join([f"T.{col} = S.{col}" for col in id_cols])
+        id_match = " AND ".join(
+            [f"T.{col} IS NOT DISTINCT FROM S.{col}" for col in id_cols]
+        )
         update_set = ", ".join(
             [f"{col} = S.{col}" for col in df.columns if col not in id_cols]
         )
@@ -322,7 +336,9 @@ class BigQueryHelper:
 
         merge_sql = f"""
         MERGE `{table_id}` T
-        USING `{temp_table_id}` S
+        USING (
+            SELECT DISTINCT {', '.join(df.columns)} FROM `{temp_table_id}`
+        ) S
         ON {id_match}
         WHEN MATCHED THEN
           UPDATE SET {update_set}

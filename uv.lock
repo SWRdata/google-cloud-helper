@@ -206,7 +206,7 @@ wheels = [
 
 [[package]]
 name = "google-cloud-helper"
-version = "0.1.3"
+version = "0.1.7"
 source = { editable = "." }
 dependencies = [
     { name = "google-cloud-bigquery" },

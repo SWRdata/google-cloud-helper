@@ -32,16 +32,16 @@ print("Successfully retrieved secret!")
 
 <!-- BIGQUERYHELPER START -->
 - `create_dataset(self, dataset_id, location)`
-- `create_table_from_df(self, table_id, df, partitioning, clustering, labels)`
+- `create_table_from_df(self, table_id, df, partitioning, clustering, labels, specific_types)`
 - `create_table_labels(self, cost_category, triggered_by, caller)`
 - `delete_dataset(self, dataset_id)`
 - `delete_table(self, table_id)`
 - `exists_table(self, table_id)`
-- `generate_bigquery_schema_from_df(self, df)`
-- `incremental_insert_with_deduplication(self, table_id, df, unique_key)`
+- `generate_bigquery_schema_from_df(self, df, specific_types)`
+- `incremental_insert_with_deduplication(self, table_id, df, id_cols)`
 - `read_table_as_df(self, table_id)`
 - `sql2df(self, query)`
-- `update_table(self, df, table_id, id_cols)`
+- `update_table(self, table_id, df, id_cols)`
 - `upload_df_to_table(self, table_id, df)`
 
 <!-- BIGQUERYHELPER END -->
