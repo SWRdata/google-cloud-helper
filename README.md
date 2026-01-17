@@ -12,12 +12,12 @@ from google_cloud_helper.SecretManagerHelper import SecretManagerHelper
 
 # BigQuery
 bq_helper = BigQueryHelper("your-gcp-project-id")
-exists = bq_helper.table_exists("your-gcp-project-id.dataset.table")
+exists = bq_helper.exists_table("your-gcp-project-id.dataset.table")
 print(f"Table exists: {exists}")
 
 # Google Cloud Storage
 bucket_helper = GoogleBucketHelper("your-gcp-project-id")
-bucket_exists = bucket_helper.bucket_exists("your-bucket-name")
+bucket_exists = bucket_helper.exists_bucket("your-bucket-name")
 print(f"Bucket exists: {bucket_exists}")
 
 # Secret Manager
