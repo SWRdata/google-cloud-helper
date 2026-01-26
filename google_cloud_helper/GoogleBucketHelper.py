@@ -1,3 +1,5 @@
+from typing import List
+
 from google.cloud import exceptions, storage
 
 
@@ -55,3 +57,21 @@ class GoogleBucketHelper:
             return True
         except exceptions.NotFound:
             return False
+
+    def list_all_files_in_bucket(
+        self, bucket_name: str, folder_name: str, suffix: str = ""
+    ) -> List[str]:
+        """Lists all files in a Google Cloud Storage bucket.
+
+        Args:
+            bucket_name: The name of the bucket.
+            folder_name: The name of the folder to list files from.
+            suffix: Optional. A suffix to filter the files by.
+
+        Returns:
+            A list of file paths in the bucket.
+        """
+        bucket = self.client.bucket(bucket_name)
+        blobs = bucket.list_blobs(prefix=folder_name)
+        files: List[str] = [blob.name for blob in blobs if blob.name.endswith(suffix)]
+        return files

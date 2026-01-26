@@ -52,6 +52,7 @@ print("Successfully retrieved secret!")
 <!-- GOOGLEBUCKETHELPER START -->
 - `download_as_text(self, bucket_name, path)`
 - `exists_bucket(self, bucket_name)`
+- `list_all_files_in_bucket(self, bucket_name, folder_name, suffix)`
 - `upload_content(self, content, bucket_name, filename, content_type)`
 
 <!-- GOOGLEBUCKETHELPER END -->
