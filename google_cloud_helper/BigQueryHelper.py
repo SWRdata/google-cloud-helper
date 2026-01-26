@@ -5,6 +5,7 @@ from typing import Dict, List
 import pandas as pd
 from google.cloud import bigquery, exceptions
 from google.cloud.bigquery.schema import SchemaField
+from pandas_gbq import read_gbq
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,10 @@ class BigQueryHelper:
         Returns:
             A pandas DataFrame containing the data from the table.
         """
-        return pd.read_gbq(table_id, project_id=self.project_id)
+        if len(table_id.split(".")) == 3:
+            table_id = ".".join(table_id.split(".")[1:])
+        sql = f"SELECT * FROM `{table_id}`"
+        return read_gbq(sql, project_id=self.project_id)
 
     def create_dataset(self, dataset_id: str, location: str = "europe-west3") -> None:
         """Creates a BigQuery dataset if it doesn't already exist.
