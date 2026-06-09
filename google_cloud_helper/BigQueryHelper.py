@@ -50,7 +50,7 @@ class BigQueryHelper:
             A dictionary of default labels for BigQuery tables.
         """
         return {
-            "cost-category": cost_category,
+            "cost_category": cost_category,
             "triggered_by": triggered_by,
             "caller": caller,
         }
